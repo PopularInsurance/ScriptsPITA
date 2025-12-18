@@ -211,6 +211,9 @@ TIPOS_DOCUMENTO = {
             "ESTUDIO",
             "Capital Title",
             "CAPITAL TITLE",
+            "RAC TITLES SEARCH",  # Otro proveedor de estudios de título
+            "RAC TITLES",
+            "FINCA #",  # Indicador común en estudios de título
         ],
         "identificadores_negativos": [
             "Divulgaciones Seguro de Título",
@@ -221,6 +224,14 @@ TIPOS_DOCUMENTO = {
             "finca": [
                 r"FINCA\s*[:\s]*(?:N[uú]mero\s*)?([\d,]+)",
                 r"Finca\s+n[uú]mero\s+([\d,]+)",
+                r"FINCA\s*#\s*([\d,]+)",  # Formato RAC: FINCA #26751
+            ],
+            "num_solicitud": [
+                r"LOAN[:\s]*(\d{10})",  # Formato RAC: LOAN: 0703560268
+                r"N[uú]mero\s+de\s+pr[eé]stamo[:\s]*(\d{10})",
+            ],
+            "caso": [
+                r"CASO[:\s]*([A-ZÁÉÍÓÚÑ][A-Za-záéíóúñÁÉÍÓÚÑ\s]+?)(?=\n|LOAN)",  # Nombre del cliente
             ],
             "tipo_propiedad": "DETECTAR_TIPO",  # Lógica especial
             "fecha_documento": "ULTIMA_FECHA_ESTUDIO",  # Lógica especial - busca en continuaciones
@@ -234,10 +245,14 @@ TIPOS_DOCUMENTO = {
         "identificadores": [
             "Continuación",
             "Continuacion",
+            "CARGAS Y GRAVAMENES",  # Sección típica de continuación en RAC TITLES
+            "CARGAS Y GRAV",
+            "POR SU PROCEDENCIA",  # Otra sección de continuación
         ],
         "identificadores_negativos": [
             "Autorización",  # Si tiene autorización, no es continuación
             "Divulgaciones",  # Si tiene divulgaciones, no es continuación
+            "Solicitud de Cotización",  # No es continuación si es carta
         ],
         "campos": {},  # No extraemos campos, solo se usa para la fecha
         "requiere_firma": False,

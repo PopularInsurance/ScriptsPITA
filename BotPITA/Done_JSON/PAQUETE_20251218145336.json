@@ -1,0 +1,82 @@
+{
+  "archivo": "PAQUETE_20251218145336_OCR.pdf",
+  "total_paginas": 6,
+  "resumen_validacion": "APROBADO",
+  "documentos_detectados": {
+    "CARTA_SOLICITUD": {
+      "paginas": [
+        1
+      ],
+      "datos": {
+        "nombre_solicitante": "NOELIS MICHELLE ARZAN",
+        "direccion_postal": "HC 5 BOX 47177 Vega Baja PR 00693",
+        "ssn": "598-54-0205",
+        "email": "noelis.arzan@gmail.com",
+        "cantidad_hipoteca": "$216,015.00",
+        "precio_venta": "$220,000.00",
+        "tipo_prestamo": "FHA EX Fixed 30",
+        "fecha_estimada_cierre": "12/15/2025"
+      }
+    },
+    "ESTUDIO_TITULO": {
+      "paginas": [
+        2,
+        3
+      ],
+      "datos": {
+        "finca": "26751",
+        "num_solicitud": "0703560268",
+        "caso": "NOELIS ARZAN SANCHEZ",
+        "tipo_propiedad": "CASA",
+        "fecha_documento": "9 de diciembre de 2025"
+      }
+    },
+    "AUTORIZACION_SEGUROS": {
+      "paginas": [
+        4
+      ],
+      "datos": {
+        "nombre_solicitante": "NOELIS MICHELLE ARZAN SANCHEZ",
+        "num_solicitud": "0703560268",
+        "linea_rechazo": "CORRECTO (Está en blanco)",
+        "firma": {
+          "presente": true,
+          "tipo": "Firma Manuscrita",
+          "detalle": "Firma manuscrita detectada (129 trazos, 18.0% tinta)"
+        }
+      }
+    },
+    "DIVULGACIONES_PRODUCTOS": {
+      "paginas": [
+        5
+      ],
+      "datos": {
+        "num_solicitud": "0703560268",
+        "firma": {
+          "presente": true,
+          "tipo": "Firma Electronica (Timestamp)",
+          "detalle": "Neri Baez - 11/28/2025 3:35 PM PST"
+        }
+      }
+    },
+    "DIVULGACIONES_TITULO": {
+      "paginas": [
+        6
+      ],
+      "datos": {
+        "num_solicitud": "0703560268",
+        "firma": {
+          "presente": true,
+          "tipo": "Firma Manuscrita",
+          "detalle": "Firma manuscrita detectada (63 trazos, 12.4% tinta)"
+        }
+      }
+    }
+  },
+  "validaciones": {
+    "nombre_consistente": true,
+    "numero_solicitud_consistente": true,
+    "firmas_completas": true
+  },
+  "alertas": []
+}

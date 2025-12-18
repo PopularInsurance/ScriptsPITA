@@ -1,0 +1,46 @@
+REPORTE DE VERIFICACIÓN DE PRÉSTAMOS
+Fecha: 2025-12-18 14:53:53
+============================================================
+
+Archivo: PAQUETE_20251218145336_OCR.pdf
+Estado: APROBADO
+Páginas: 6
+
+DOCUMENTOS DETECTADOS:
+  CARTA_SOLICITUD (Páginas [1]):
+    nombre_solicitante: NOELIS MICHELLE ARZAN
+    direccion_postal: HC 5 BOX 47177 Vega Baja PR 00693
+    ssn: 598-54-0205
+    email: noelis.arzan@gmail.com
+    cantidad_hipoteca: $216,015.00
+    precio_venta: $220,000.00
+    tipo_prestamo: FHA EX Fixed 30
+    fecha_estimada_cierre: 12/15/2025
+
+  ESTUDIO_TITULO (Páginas [2, 3]):
+    finca: 26751
+    num_solicitud: 0703560268
+    caso: NOELIS ARZAN SANCHEZ
+    tipo_propiedad: CASA
+    fecha_documento: 9 de diciembre de 2025
+
+  AUTORIZACION_SEGUROS (Páginas [4]):
+    nombre_solicitante: NOELIS MICHELLE ARZAN SANCHEZ
+    num_solicitud: 0703560268
+    linea_rechazo: CORRECTO (Está en blanco)
+    firma: {'presente': True, 'tipo': 'Firma Manuscrita', 'detalle': 'Firma manuscrita detectada (129 trazos, 18.0% tinta)'}
+
+  DIVULGACIONES_PRODUCTOS (Páginas [5]):
+    num_solicitud: 0703560268
+    firma: {'presente': True, 'tipo': 'Firma Electronica (Timestamp)', 'detalle': 'Neri Baez - 11/28/2025 3:35 PM PST'}
+
+  DIVULGACIONES_TITULO (Páginas [6]):
+    num_solicitud: 0703560268
+    firma: {'presente': True, 'tipo': 'Firma Manuscrita', 'detalle': 'Firma manuscrita detectada (63 trazos, 12.4% tinta)'}
+
+VALIDACIONES:
+  nombre_consistente: True
+  numero_solicitud_consistente: True
+  firmas_completas: True
+
+============================================================
