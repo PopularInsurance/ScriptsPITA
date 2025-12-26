@@ -14,15 +14,19 @@ import shutil
 from glob import glob
 from datetime import datetime
 
-# Carpetas a crear
+# Base en Desktop: crear BotPITA en el Desktop del usuario
+BASE_DESKTOP = os.path.join(os.path.expanduser("~"), "Desktop")
+BOTPITA_BASE = os.path.join(BASE_DESKTOP, "BotPITA")
+
+# Carpetas a crear dentro de Desktop/BotPITA
 CARPETAS = [
-    "BotPITA/Inbox",
-    "BotPITA/Processing_OCR",
-    "BotPITA/Done_JSON",
-    "BotPITA/Processing_TXT",
-    "BotPITA/Error",
-    "BotPITA/Logs",
-    "BotPITA/Historial_OCR",
+    os.path.join(BOTPITA_BASE, "Inbox"),
+    os.path.join(BOTPITA_BASE, "Processing_OCR"),
+    os.path.join(BOTPITA_BASE, "Done_JSON"),
+    os.path.join(BOTPITA_BASE, "Processing_TXT"),
+    os.path.join(BOTPITA_BASE, "Error"),
+    os.path.join(BOTPITA_BASE, "Logs"),
+    os.path.join(BOTPITA_BASE, "Historial_OCR"),
 ]
 
 def main():
@@ -76,12 +80,7 @@ def main():
 """
 cotizaciones_temp_handler.py
 
-Helper para:
- - Agrupar PDFs colocados en la carpeta temporal (por ID en filename o prefijo)
- - Unir los PDFs de cada grupo a un solo PDF
- - Ejecutar OCR sobre el PDF unido (usando convertir_a_searchable)
- - Generar JSON y TXT usando las funciones de verificar_prestamos_v3
- - Guardar resultados en la estructura BotPITA
+Helper para procesar PDFs temporales usando la estructura BotPITA en el Desktop.
 
 Ejecutar:
     python cotizaciones_temp_handler.py
@@ -96,7 +95,22 @@ import shutil
 from glob import glob
 from datetime import datetime
 
-# Intentar importar merge/ocr/reporte desde el repo
+# Calcular base en Desktop
+BASE_DESKTOP = os.path.join(os.path.expanduser("~"), "Desktop")
+BOTPITA_BASE = os.path.join(BASE_DESKTOP, "BotPITA")
+
+# Carpetas (usar la estructura BotPITA en Desktop)
+CARPETAS = {
+    "temp": os.path.join(BOTPITA_BASE, "Cotizaciones_temp"),
+    "entrada": os.path.join(BOTPITA_BASE, "Inbox"),
+    "ocr": os.path.join(BOTPITA_BASE, "Processing_OCR"),
+    "resultados": os.path.join(BOTPITA_BASE, "Done_JSON"),
+    "resultados_txt": os.path.join(BOTPITA_BASE, "Processing_TXT"),
+    "error": os.path.join(BOTPITA_BASE, "Error"),
+    "logs": os.path.join(BOTPITA_BASE, "Logs"),
+    "historial": os.path.join(BOTPITA_BASE, "Historial_OCR"),
+}
+
 try:
     from PyPDF2 import PdfMerger
 except Exception:
@@ -111,17 +125,6 @@ try:
     from verificar_prestamos_v3 import procesar_paquete, validar_consistencia, generar_reporte
 except Exception:
     procesar_paquete = validar_consistencia = generar_reporte = None
-
-# Carpetas (usar la estructura BotPITA)
-CARPETAS = {
-    "inbox": "BotPITA/Inbox",
-    "ocr": "BotPITA/Processing_OCR",
-    "done_json": "BotPITA/Done_JSON",
-    "done_txt": "BotPITA/Processing_TXT",
-    "error": "BotPITA/Error",
-    "logs": "BotPITA/Logs",
-    "historial": "BotPITA/Historial_OCR",
-}
 
 def find_group_key(filename):
     """

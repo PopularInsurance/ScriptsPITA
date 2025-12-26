@@ -42,14 +42,18 @@ from verificar_prestamos_v3 import procesar_paquete, validar_consistencia, gener
 # =============================================================================
 
 # Carpetas del pipeline
+# Carpeta BotPITA en Desktop
+BASE_DESKTOP = os.path.join(os.path.expanduser("~"), "Desktop")
+BOTPITA_BASE = os.path.join(BASE_DESKTOP, "BotPITA")
+
 CARPETAS = {
-    "entrada": "BotPITA/Inbox",
-    "ocr": "BotPITA/Processing_OCR",
-    "error": "BotPITA/Error",
-    "resultados": "BotPITA/Done_JSON",
-    "resultados_txt": "BotPITA/Processing_TXT",
-    "logs": "BotPITA/Logs",
-    "historial": "BotPITA/Historial_OCR",
+    "entrada": os.path.join(BOTPITA_BASE, "Inbox"),
+    "ocr": os.path.join(BOTPITA_BASE, "Processing_OCR"),
+    "error": os.path.join(BOTPITA_BASE, "Error"),
+    "resultados": os.path.join(BOTPITA_BASE, "Done_JSON"),
+    "resultados_txt": os.path.join(BOTPITA_BASE, "Processing_TXT"),
+    "logs": os.path.join(BOTPITA_BASE, "Logs"),
+    "historial": os.path.join(BOTPITA_BASE, "Historial_OCR"),
 }
 
 # Archivo de log
@@ -375,10 +379,20 @@ def procesar_grupo(nombre_grupo, lista_pdfs):
     ruta_txt = os.path.join(CARPETAS["resultados_txt"], f"{nombre_grupo}.txt")
     ruta_historial = os.path.join(CARPETAS["historial"], f"{nombre_grupo}.pdf")
     
-    # --- Si JSON ya existe, ignorar ---
-    if os.path.exists(ruta_json):
-        print(f"  [--] JSON ya existe, ignorando grupo")
-        return "IGNORADO"
+    # --- Si JSON/TXT ya existen, borrarlos para regenerar al procesar este grupo ---
+    if os.path.exists(ruta_json) or os.path.exists(ruta_txt):
+        print(f"  [..] Encontrados resultados anteriores para {nombre_grupo}, se eliminarán para regenerar")
+        try:
+            if os.path.exists(ruta_json):
+                os.remove(ruta_json)
+                print(f"      [DEL] Resultados JSON previo: {os.path.basename(ruta_json)}")
+            if os.path.exists(ruta_txt):
+                os.remove(ruta_txt)
+                print(f"      [DEL] Resultado TXT previo: {os.path.basename(ruta_txt)}")
+            escribir_log(nombre_grupo, "BORRADO_ANTERIOR", "OK", "Resultados previos eliminados antes de reprocesar", 0)
+        except Exception as e:
+            print(f"      [ERR] No se pudo borrar resultados previos: {e}")
+            escribir_log(nombre_grupo, "BORRADO_ANTERIOR", "ERROR", str(e)[:100], 0)
     
     # --- Verificar límite de errores ---
     errores = contar_errores(nombre_grupo)

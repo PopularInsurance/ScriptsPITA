@@ -411,6 +411,132 @@ def limpiar_email(contenido):
     return contenido.lower() if '@' in contenido else None
 
 
+# ---------- Normalización de nombre y dirección ----------
+MUNICIPIOS_PR = {
+    "Adjuntas","Aguada","Aguadilla","Aguas Buenas","Aibonito","Añasco","Arecibo","Arroyo",
+    "Barceloneta","Barranquitas","Bayamón","Cabo Rojo","Caguas","Camuy","Canóvanas","Carolina",
+    "Cataño","Cayey","Ceiba","Ciales","Cidra","Coamo","Comerío","Corozal","Culebra","Dorado",
+    "Fajardo","Florida","Guayama","Guayanilla","Guaynabo","Gurabo","Hatillo","Hormigueros",
+    "Humacao","Isabela","Jayuya","Juana Díaz","Juncos","Lajas","Lares","Las Marías","Las Piedras",
+    "Loíza","Luquillo","Manatí","Maricao","Maunabo","Mayagüez","Moca","Morovis","Naguabo",
+    "Naranjito","Orocovis","Patillas","Peñuelas","Ponce","Quebradillas","Rincón","Río Grande",
+    "Sabana Grande","Salinas","San Germán","San Juan","San Lorenzo","San Sebastián","Santa Isabel",
+    "Toa Alta","Toa Baja","Trujillo Alto","Utuado","Vega Alta","Vega Baja","Vieques","Villalba",
+    "Yabucoa","Yauco"
+}
+
+
+def parse_full_name(full_name):
+    """Divide un nombre completo en `nombre`, `middle_name`, `apellidos`.
+    Regla heurística simple: primer token = nombre, segundo = middle_name, resto = apellidos.
+    """
+    if not full_name:
+        return {"nombre": None, "middle_name": None, "apellidos": None}
+    txt = limpiar(full_name)
+    parts = txt.split()
+    if len(parts) == 1:
+        return {"nombre": parts[0], "middle_name": None, "apellidos": None}
+    if len(parts) == 2:
+        return {"nombre": parts[0], "middle_name": None, "apellidos": parts[1]}
+    nombre = parts[0]
+    middle = parts[1]
+    apellidos = " ".join(parts[2:])
+    return {"nombre": nombre, "middle_name": middle, "apellidos": apellidos}
+
+
+def parse_address(address_line):
+    """Intenta separar `address_line` en address, city, state, zipcode.
+    Reglas:
+      - Extrae zipcode (5 dígitos) si está presente.
+      - Busca la sigla de estado (ej. PR) cerca del zipcode.
+      - City se asume como el token(es) antes de la sigla de estado.
+      - Si la city coincide parcial/totalmente con MUNICIPIOS_PR, la normaliza.
+    """
+    if not address_line:
+        return {"address": None, "city": None, "state": None, "zipcode": None}
+    txt = limpiar(address_line)
+    zipcode = None
+    m_zip = re.search(r'\b(\d{5})\b', txt)
+    if m_zip:
+        zipcode = m_zip.group(1)
+    # estado (buscar PR u otra sigla cercana al zipcode)
+    state = None
+    if ' PR ' in f" {txt.upper()} " or txt.upper().endswith(' PR') or ', PR' in txt.upper():
+        state = 'PR'
+    else:
+        m_state = re.search(r'\b([A-Z]{2})\b', txt.upper())
+        if m_state:
+            state = m_state.group(1)
+
+    # intentar extraer city usando heurística y la lista de municipios
+    city = None
+    address = txt
+
+    # Determinar la porción anterior al state/zip
+    pre = None
+    if zipcode:
+        pre = txt[:txt.rfind(zipcode)].strip().rstrip(',')
+    elif state:
+        m_state = re.search(r'\b(PR|[A-Z]{2})\b', txt.upper())
+        if m_state:
+            pre = txt[:m_state.start()].strip().rstrip(',')
+
+    if pre:
+        # Buscar coincidencia de municipio al final de 'pre'
+        pre_upper = pre.upper()
+        found_munic = None
+        # Ordenar municipios por longitud descendente para evitar coincidencias parciales
+        for m in sorted(MUNICIPIOS_PR, key=lambda x: -len(x)):
+            # buscar coincidencia como palabra completa en cualquier parte de 'pre'
+            if re.search(r'\b' + re.escape(m.upper()) + r'\b', pre_upper):
+                found_munic = m
+                break
+            # también permitir que venga separado por coma al final
+            if ',' in pre and pre_upper.split(',')[-1].strip() == m.upper():
+                found_munic = m
+                break
+
+        if found_munic:
+            city = found_munic
+            # quitar la última aparición del municipio en 'pre' para dejar la dirección
+            last_match = None
+            for mm in re.finditer(re.escape(found_munic), pre, flags=re.IGNORECASE):
+                last_match = mm
+            if last_match:
+                address_candidate = pre[:last_match.start()].strip().rstrip(',')
+                address = address_candidate if address_candidate else None
+            else:
+                address = None
+            # si no se ha determinado el state, mantener el ya detectado
+            return {"address": address, "city": city, "state": state, "zipcode": zipcode}
+
+        # Si no encontramos municipio pero 'pre' contiene comas, usar la última sección como city
+        if ',' in pre:
+            parts = [p.strip() for p in pre.split(',') if p.strip()]
+            if len(parts) >= 2:
+                city = parts[-1]
+                address = ', '.join(parts[:-1])
+                return {"address": address, "city": city, "state": state, "zipcode": zipcode}
+
+    # Si no hay pre o no se pudo separar, intentar heurística por tokens
+    if zipcode:
+        before = txt[:txt.rfind(zipcode)].strip()
+        parts = before.split()
+        if len(parts) >= 2:
+            possible_state = parts[-1].upper()
+            if len(possible_state) == 2:
+                state = possible_state
+                city = parts[-2]
+                address = " ".join(parts[:-2]).strip()
+            else:
+                city = parts[-1]
+                address = " ".join(parts[:-1]).strip()
+        else:
+            address = before
+
+    return {"address": address if address else None, "city": city, "state": state, "zipcode": zipcode}
+
+
 # =============================================================================
 # FUNCIÓN: DETECTAR TIPO DE DOCUMENTO
 # =============================================================================
@@ -1065,6 +1191,25 @@ def generar_reporte(archivo, documentos, num_paginas, validaciones, alertas):
         "alertas": alertas,
     }
     
+    # Normalizar nombres y direcciones dentro de documentos_detectados
+    for tipo, info in reporte.get('documentos_detectados', {}).items():
+        datos = info.get('datos', {}) or {}
+        # Normalizar nombre si hay nombre_solicitante
+        if 'nombre_solicitante' in datos and datos.get('nombre_solicitante'):
+            norm = parse_full_name(datos.get('nombre_solicitante'))
+            datos['nombre'] = norm.get('nombre')
+            datos['middle_name'] = norm.get('middle_name')
+            datos['apellidos'] = norm.get('apellidos')
+        # Normalizar dirección postal si existe
+        if 'direccion_postal' in datos and datos.get('direccion_postal'):
+            addr = parse_address(datos.get('direccion_postal'))
+            datos['address'] = addr.get('address')
+            datos['city'] = addr.get('city')
+            datos['state'] = addr.get('state')
+            datos['zipcode'] = addr.get('zipcode')
+        # Asegurar que los cambios queden reflejados
+        reporte['documentos_detectados'][tipo]['datos'] = datos
+
     return reporte
 
 
